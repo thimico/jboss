@@ -1,4 +1,4 @@
-FROM thimico/jdk7:latest
+FROM thimico/jre7:latest
 
 MAINTAINER thimico
 
@@ -18,11 +18,11 @@ ADD content/selodigital.txt /opt/jboss-as-7.1.1.Final
  ADD content/postgresql-9.3-1102.jdbc41.jar /opt/jboss-as-7.1.1.Final/modules/org/postgres/main
  ADD content/postgresql-9.3-1102.jdbc41.jar.index /opt/jboss-as-7.1.1.Final/modules/org/postgres/main
  ADD content/standalone.conf /opt/jboss-as-7.1.1.Final/bin
+  RUN   mkdir /usr/share/fonts
  RUN   mkdir /usr/share/fonts/truetrype
- RUN   mkdir /usr/share/fonts
 ADD content/Fonts/* /usr/share/fonts/truetrype
  RUN fc-cache -fv
- 
+
 # Expose the ports we're interested in
 EXPOSE 8080 8443 9990
 
