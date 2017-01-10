@@ -18,7 +18,7 @@ ADD content/selodigital.txt /opt/jboss-as-7.1.1.Final
  ADD content/postgresql-9.3-1102.jdbc41.jar /opt/jboss-as-7.1.1.Final/modules/org/postgres/main
  ADD content/postgresql-9.3-1102.jdbc41.jar.index /opt/jboss-as-7.1.1.Final/modules/org/postgres/main
  ADD content/standalone.conf /opt/jboss-as-7.1.1.Final/bin
- RUN   mkdir /ush/share/fonts/truetrype
+ RUN   mkdir /usr/share/fonts/truetrype
 ADD content/Fonts/* /ush/share/fonts/truetrype
 
 # Expose the ports we're interested in
