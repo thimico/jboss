@@ -20,8 +20,8 @@ ADD content/selodigital.txt /opt/jboss-as-7.1.1.Final
  ADD content/standalone.conf /opt/jboss-as-7.1.1.Final/bin
   RUN   mkdir /usr/share/fonts
  RUN   mkdir /usr/share/fonts/truetrype
-ADD content/Fonts/* /usr/share/fonts/truetrype
- RUN fc-cache -fv
+ADD content/Fonts /usr/share/fonts/truetrype
+ RUN fc-cache
 
 # Expose the ports we're interested in
 EXPOSE 8080 8443 9990
