@@ -30,7 +30,7 @@ ADD content/Fonts /usr/share/fonts/truetrype
 
 # Expose the ports we're interested in
 EXPOSE 8080 8443 9990 8100
-
+ 
 VOLUME ["/tmp"]
 
 RUN chmod +x /usr/bin/libreoffice_iniciar.sh
