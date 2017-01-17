@@ -37,6 +37,6 @@ RUN chmod +x /usr/bin/libreoffice_iniciar.sh
 
 # Set the default command to run on boot
 # This will boot WildFly in the standalone mode and bind to all interface
-CMD  ["/usr/bin/libreoffice_iniciar.sh"] && ["/opt/jboss-as-7.1.1.Final/bin/standalone.sh", "-b", "0.0.0.0"]
+CMD  ["/usr/bin/libreoffice_iniciar.sh"]
 
 #rodar o comando: docker run --name jbossdt -v ~/docker_volumes/jbossdt:/opt/jboss-as-7.1.1.Final/standalone -p 8080:8080 jboss
