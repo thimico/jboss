@@ -1,4 +1,4 @@
-FROM thimico/jdk8:latest
+FROM openjdk:8u151-jdk-alpine
 
 MAINTAINER thimico
 
