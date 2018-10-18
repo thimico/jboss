@@ -79,4 +79,4 @@ RUN fc-cache
 # COPY --chown=jboss ./target/*.war ${JBOSS_HOME}/standalone/deployments/                       #
 #################################################################################################
 
-#rodar o comando: docker run --name jbossdt -v ~/docker_volumes/jbossdt:/opt/jboss-as-7.1.1.Final/standalone -p 8080:8080 thimico/jboss:jboss:eap-6.4 
+#rodar o comando: docker run --name jbossdt -v ~/docker_volumes/jbossdt:/opt/jboss-as-7.1.1.Final/standalone -p 8080:8080 thimico/jboss:eap-6.4
