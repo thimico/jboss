@@ -48,12 +48,15 @@ CMD /bin/bash
 EXPOSE 8080 9990 8443
 ENTRYPOINT /bin/bash ${JBOSS_HOME}/bin/standalone.sh
 
-RUN wget -q ${JBOSS_URL} -O ${JBOSS_USER_HOME}/${JBOSS_FILE} \
- && unzip ${JBOSS_USER_HOME}/${JBOSS_FILE} -d ${JBOSS_USER_HOME} \
- && rm -rf ${JBOSS_USER_HOME}/${JBOSS_FILE} \
- && sudo apk --no-cache --no-network --purge del busybox-suid unzip shadow \
- && sudo rm -rf /var/cache/apk/* /tmp/* \
- && ${JBOSS_HOME}/bin/add-user.sh ${JBOSS_ADMIN_USER} ${JBOSS_ADMIN_PASSWORD} --silent \
+RUN wget -q ${JBOSS_URL} -O ${JBOSS_USER_HOME}/${JBOSS_FILE}
+RUN unzip ${JBOSS_USER_HOME}/${JBOSS_FILE} -d ${JBOSS_USER_HOME} \
+
+ && rm -rf ${JBOSS_USER_HOME}/${JBOSS_FILE}
+
+RUN sudo apk --no-cache --no-network --purge del busybox-suid unzip shadow \
+ && sudo rm -rf /var/cache/apk/* /tmp/* 
+ 
+RUN ${JBOSS_HOME}/bin/add-user.sh ${JBOSS_ADMIN_USER} ${JBOSS_ADMIN_PASSWORD} --silent \
  && echo "JAVA_OPTS=\"\$JAVA_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0\"" >> ${JBOSS_HOME}/bin/standalone.conf
 
 RUN   mkdir /usr/share/fonts
