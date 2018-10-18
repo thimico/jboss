@@ -1,4 +1,4 @@
-FROM thimico/jre7:latest
+FROM thimico/jdk8:latest
 
 MAINTAINER thimico
 
