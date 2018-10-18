@@ -1,29 +1,29 @@
-FROM openjdk:8u151-jdk-alpine
+FROM thimico/jre7:latest
 
 MAINTAINER thimico
 
-ARG VERSION_ARG="6.4"
-ARG JBOSS_ADMIN_PASSWORD_ARG="admin123"
-ARG JBOSS_ADMIN_USER_ARG="admin"
+ARG VERSION_ARG=6.4
+ARG JBOSS_ADMIN_PASSWORD_ARG=admin123
+ARG JBOSS_ADMIN_USER_ARG=admin
 
 ENV VERSION=${VERSION_ARG} \
     JBOSS_ADMIN_PASSWORD=${JBOSS_ADMIN_PASSWORD_ARG} \
     JBOSS_ADMIN_USER=${JBOSS_ADMIN_USER_ARG}
 
-ENV JBOSS_USER="jboss-eap-${VERSION}"
+ENV JBOSS_USER=jboss-eap-${VERSION}
 
-ENV JBOSS_FILE="${JBOSS_USER}.0.zip" \
-    JBOSS_USER_HOME="/home/${JBOSS_USER}"
+ENV JBOSS_FILE=${JBOSS_USER}.0.zip \
+    JBOSS_USER_HOME=/home/${JBOSS_USER}
 
-ENV JBOSS_URL="https://github.com/daggerok/jboss/releases/download/eap/${JBOSS_FILE}" \
-    JBOSS_HOME="${JBOSS_USER_HOME}/${JBOSS_USER}"
+ENV JBOSS_URL=https://github.com/daggerok/jboss/releases/download/eap/${JBOSS_FILE} \
+    JBOSS_HOME=${JBOSS_USER_HOME}/${JBOSS_USER}
 
-RUN apk --no-cache --update add busybox-suid bash wget ca-certificates unzip sudo openssh-client shadow
+RUN apk --no-cache --update add bash wget ca-certificates unzip sudo
 RUN wget -q ${JBOSS_URL} -O ${JBOSS_USER_HOME}/${JBOSS_FILE}
 RUN unzip ${JBOSS_USER_HOME}/${JBOSS_FILE} -d ${JBOSS_USER_HOME} \
 	rm -rf ${JBOSS_USER_HOME}/${JBOSS_FILE}
 RUN addgroup ${JBOSS_USER}-group \
- && echo "${JBOSS_USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
+ && echo ${JBOSS_USER} ALL=(ALL) NOPASSWD: ALL >> /etc/sudoers \
  && sed -i "s/.*requiretty$/Defaults !requiretty/" /etc/sudoers \
  && adduser -h ${JBOSS_USER_HOME} -s /bin/bash -D -u 1025 ${JBOSS_USER} ${JBOSS_USER}-group \
  && usermod -a -G wheel ${JBOSS_USER} \
@@ -52,7 +52,7 @@ EXPOSE 8080 9990 8443
 ENTRYPOINT /bin/bash ${JBOSS_HOME}/bin/standalone.sh
 
 
-RUN sudo apk --no-cache --no-network --purge del busybox-suid unzip shadow \
+RUN sudo apk --no-cache --no-network --purge del unzip \
  && sudo rm -rf /var/cache/apk/* /tmp/* 
 
 RUN ${JBOSS_HOME}/bin/add-user.sh ${JBOSS_ADMIN_USER} ${JBOSS_ADMIN_PASSWORD} --silent \
