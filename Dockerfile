@@ -18,8 +18,11 @@ ENV JBOSS_FILE="${JBOSS_USER}.0.zip" \
 ENV JBOSS_URL="https://github.com/daggerok/jboss/releases/download/eap/${JBOSS_FILE}" \
     JBOSS_HOME="${JBOSS_USER_HOME}/${JBOSS_USER}"
 
-RUN apk --no-cache --update add busybox-suid bash wget ca-certificates unzip sudo openssh-client shadow \
- && addgroup ${JBOSS_USER}-group \
+RUN apk --no-cache --update add busybox-suid bash wget ca-certificates unzip sudo openssh-client shadow
+RUN wget -q ${JBOSS_URL} -O ${JBOSS_USER_HOME}/${JBOSS_FILE}
+RUN unzip ${JBOSS_USER_HOME}/${JBOSS_FILE} -d ${JBOSS_USER_HOME} \
+	rm -rf ${JBOSS_USER_HOME}/${JBOSS_FILE}
+RUN addgroup ${JBOSS_USER}-group \
  && echo "${JBOSS_USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
  && sed -i "s/.*requiretty$/Defaults !requiretty/" /etc/sudoers \
  && adduser -h ${JBOSS_USER_HOME} -s /bin/bash -D -u 1025 ${JBOSS_USER} ${JBOSS_USER}-group \
@@ -48,14 +51,10 @@ CMD /bin/bash
 EXPOSE 8080 9990 8443
 ENTRYPOINT /bin/bash ${JBOSS_HOME}/bin/standalone.sh
 
-RUN wget -q ${JBOSS_URL} -O ${JBOSS_USER_HOME}/${JBOSS_FILE}
-RUN unzip ${JBOSS_USER_HOME}/${JBOSS_FILE} -d ${JBOSS_USER_HOME} \
-
- && rm -rf ${JBOSS_USER_HOME}/${JBOSS_FILE}
 
 RUN sudo apk --no-cache --no-network --purge del busybox-suid unzip shadow \
  && sudo rm -rf /var/cache/apk/* /tmp/* 
- 
+
 RUN ${JBOSS_HOME}/bin/add-user.sh ${JBOSS_ADMIN_USER} ${JBOSS_ADMIN_PASSWORD} --silent \
  && echo "JAVA_OPTS=\"\$JAVA_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0\"" >> ${JBOSS_HOME}/bin/standalone.conf
 
