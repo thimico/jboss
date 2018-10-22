@@ -37,7 +37,7 @@ ARG JAVA_OPTS_ARGS="\
  -XX:+UnlockExperimentalVMOptions \
  #-XX:+UseCGroupMemoryLimitForHeap \
  -XshowSettings:vm \
- -Xss4m -Xms4096m -Xmn256m -Xmx4096m "
+ -Xss128m -Xms8192m -Xmn1024m -Xmx8192m "
 
  ENV JAVA_OPTS="${JAVA_OPTS} ${JAVA_OPTS_ARGS}"
 
