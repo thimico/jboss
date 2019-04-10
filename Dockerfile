@@ -1,57 +1,50 @@
-FROM thimico/jdk8:latest
+FROM openjdk:8u181-jdk-alpine3.8
 
 MAINTAINER thimico
 
-ARG VERSION_ARG=6.4
-ARG JBOSS_ADMIN_PASSWORD_ARG=admin@123
-ARG JBOSS_ADMIN_USER_ARG=admin
-
-ENV VERSION=${VERSION_ARG} \
-    JBOSS_ADMIN_PASSWORD=${JBOSS_ADMIN_PASSWORD_ARG} \
-    JBOSS_ADMIN_USER=${JBOSS_ADMIN_USER_ARG}
-
-ENV JBOSS_USER=jboss-eap-${VERSION}
-
-ENV JBOSS_FILE=${JBOSS_USER}.0.zip \
-    JBOSS_USER_HOME=/home/${JBOSS_USER}
-
-ENV JBOSS_URL=https://github.com/daggerok/jboss/releases/download/eap/${JBOSS_FILE} \
-    JBOSS_HOME=${JBOSS_USER_HOME}/${JBOSS_USER}
-
-RUN apk --no-cache --update add bash wget ca-certificates unzip sudo
-RUN mkdir -p ${JBOSS_HOME}
-RUN apk --no-cache --update add busybox-suid bash wget ca-certificates unzip sudo openssh-client \
-&& wget --no-cookies \
-         --no-check-certificate \
-         --header "Cookie: oraclelicense=accept-securebackup-cookie" \
-                  "http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip" \
-         -O /tmp/jce_policy-8.zip \
- && unzip -o /tmp/jce_policy-8.zip -d /tmp \
- && mv -f ${JAVA_HOME}/lib/security ${JAVA_HOME}/lib/backup-security || true \
- && mv -f /tmp/UnlimitedJCEPolicyJDK8 ${JAVA_HOME}/lib/security
-
-WORKDIR ${JBOSS_USER_HOME}
-
-ARG JAVA_OPTS_ARGS="\
- -Djava.net.preferIPv4Stack=true \
- -XX:+UnlockExperimentalVMOptions \
- #-XX:+UseCGroupMemoryLimitForHeap \
- -XshowSettings:vm \
- -Xss128m -Xms8192m -Xmn1024m -Xmx8192m "
-
- ENV JAVA_OPTS="${JAVA_OPTS} ${JAVA_OPTS_ARGS}"
-
-
+ENV JBOSS_VERSION='jboss-eap-6.4'                                                                      \
+    JBOSS_EAP_PATCH='6.4.0'                                                                            \
+    JBOSS_USER='jboss'
+ENV ADMIN_USER='admin'                                                                                 \
+    ADMIN_PASSWORD='Admin.123'                                                                         \
+    JBOSS_USER_HOME="/home/${JBOSS_USER}"                                                              \
+    DOWNLOAD_BASE_URL="https://github.com/daggerok/${JBOSS_VERSION}/releases/download"
+ENV JBOSS_HOME="${JBOSS_USER_HOME}/${JBOSS_VERSION}"                                                   \
+    ARCHIVES_BASE_URL="${DOWNLOAD_BASE_URL}/archives"                                                  \
+    PATCHES_BASE_URL="${DOWNLOAD_BASE_URL}/${JBOSS_EAP_PATCH}"
+ENV PATH="${JBOSS_HOME}/bin:/tmp:${PATH}"
+USER root
+RUN ( apk fix     --no-cache || echo 'cannot fix.'         )                                        && \
+    ( apk upgrade --no-cache || echo 'cannot upgrade.'     )                                        && \
+    ( apk cache   -v   clean || echo 'cannot clean cache.' )                                        && \
+      apk add     --no-cache --update --upgrade                                                        \
+                  busybox-suid bash wget ca-certificates unzip sudo openssh-client shadow           && \
+    echo "${JBOSS_USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers                                    && \
+    sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers                                     && \
+    adduser -h ${JBOSS_USER_HOME} -s /bin/bash -D ${JBOSS_USER} ${JBOSS_USER}                       && \
+    usermod -a -G ${JBOSS_USER} ${JBOSS_USER}
+USER ${JBOSS_USER}
 CMD /bin/bash
-EXPOSE 8080 9990 8443
-ENTRYPOINT /bin/bash ${JBOSS_HOME}/bin/standalone.sh
-
-RUN wget -q ${JBOSS_URL} -O ${JBOSS_USER_HOME}/${JBOSS_FILE}  \
- && unzip ${JBOSS_USER_HOME}/${JBOSS_FILE} -d ${JBOSS_USER_HOME} \
- && rm -rf ${JBOSS_USER_HOME}/${JBOSS_FILE} \
- && apk --no-cache --no-network --purge del busybox-suid unzip \
- && rm -rf /var/cache/apk/* /tmp/* \
- && ${JBOSS_HOME}/bin/add-user.sh ${JBOSS_ADMIN_USER} ${JBOSS_ADMIN_PASSWORD} --silent \
- && echo "JAVA_OPTS=\"\$JAVA_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0\"" >> ${JBOSS_HOME}/bin/standalone.conf
+ENTRYPOINT standalone.sh
+EXPOSE 8080 8443 9990 9999
+WORKDIR /tmp
+ADD --chown=jboss ./install.sh .
+RUN wget ${ARCHIVES_BASE_URL}/jce_policy-8.zip                                                         \
+         -q --no-cookies --no-check-certificate -O /tmp/jce_policy-8.zip                            && \
+    unzip -q /tmp/jce_policy-8.zip -d /tmp                                                          && \
+    ( sudo mv -f ${JAVA_HOME}/lib/security ${JAVA_HOME}/lib/backup-security || echo 'no backups.' ) && \
+    sudo mv -f /tmp/UnlimitedJCEPolicyJDK8 ${JAVA_HOME}/lib/security                                && \
+    wget ${ARCHIVES_BASE_URL}/jboss-eap-6.4.0.zip                                                      \
+         -q --no-cookies --no-check-certificate -O /tmp/jboss-eap-6.4.0.zip                         && \
+    unzip -q /tmp/jboss-eap-6.4.0.zip -d ${JBOSS_USER_HOME}                                         && \
+    add-user.sh ${ADMIN_USER} ${ADMIN_PASSWORD} --silent                                            && \
+    echo 'JAVA_OPTS="-Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0"             \
+         ' >> ${JBOSS_HOME}/bin/standalone.conf                                                     && \
+    sudo apk del --no-cache --no-network --purge                                                       \
+                 busybox-suid unzip openssh-client shadow                                           && \
+    sudo rm -rf /tmp/*.zip /tmp/*.tar.gz /var/cache/apk /var/lib/apk /etc/apk/cache || echo 'oops'  && \
+    ( standalone.sh --admin-only                                                                       \
+        & ( sudo chmod +x /tmp/install.sh && install.sh && rm -rf /tmp/install.sh ) )
+WORKDIR ${JBOSS_USER_HOME}
 
 ## docker run --name jboss -itd -p 7070:8080 thimico/jboss:eap-6.4
