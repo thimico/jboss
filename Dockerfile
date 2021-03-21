@@ -7,7 +7,9 @@ ENV JBOSS_HOME /opt/jboss-as-7.1.1.Final
 WORKDIR /build
 
 # Instalar libreoffice
-RUN apk update && apk add libreoffice
+ RUN   apk update \                                                                                                                                                                                                                        
+  &&   apk add ca-certificates wget \                                                                                                                                                                                                      
+  &&   update-ca-certificates libreoffice
 
 RUN mkdir -p /opt \
  && apk add --update bash && rm -rf /var/cache/apk/* \
