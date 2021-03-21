@@ -9,7 +9,7 @@ WORKDIR /build
 # Instalar libreoffice
  RUN   apk update \                                                                                                                                                                                                                        
   &&   apk add ca-certificates wget \                                                                                                                                                                                                      
-  &&   update-ca-certificates libreoffice
+  &&   update-ca-certificates libreoffice msttcorefonts-installer update-ms-fonts fontconfig  terminus-font
 
 RUN mkdir -p /opt \
  && apk add --update bash && rm -rf /var/cache/apk/* \
@@ -28,7 +28,7 @@ ADD content/selodigital.txt /opt/jboss-as-7.1.1.Final
   RUN   mkdir /usr/share/fonts
  RUN   mkdir /usr/share/fonts/truetrype
 ADD content/Fonts /usr/share/fonts/truetrype
- RUN fc-cache
+# RUN fc-cache -f
 
 # Expose the ports we're interested in
 EXPOSE 8080 8443 9990 8100
