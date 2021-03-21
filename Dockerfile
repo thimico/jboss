@@ -28,7 +28,7 @@ CMD /bin/bash
 ENTRYPOINT standalone.sh
 EXPOSE 8080 8443 9990 9999
 WORKDIR /tmp
-ADD --chown=jboss ./install.sh .
+# ADD --chown=jboss ./install.sh .
 RUN wget ${ARCHIVES_BASE_URL}/jce_policy-8.zip                                                         \
          -q --no-cookies --no-check-certificate -O /tmp/jce_policy-8.zip                            && \
     unzip -q /tmp/jce_policy-8.zip -d /tmp                                                          && \
